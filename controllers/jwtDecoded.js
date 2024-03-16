@@ -7,6 +7,8 @@ const Usuarios = require('../database/usuario')
 
 const userGet = async (req, res = response) => {
     const { token } = req.body;
+
+    console.log('este es el token: ',token)
     
     const decoded = jwt.verify(token, 'THATSITSASECRET');
 
@@ -37,6 +39,7 @@ const userGet = async (req, res = response) => {
        usuarios
     })
 }
+
 
 module.exports = {
     userGet

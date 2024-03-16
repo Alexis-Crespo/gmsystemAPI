@@ -2,9 +2,12 @@ const Usuario = require('./../database/usuario')
 
 const usuariosGet = async (req, res) => {
   
-    const usuarios = '23202979'
-  
-    res.json({
+    const {id} = req.params
+    console.log('el req params: ', req.params)
+    const usuarios = await Usuario.find({creador : id})
+     
+    console.log('usuarios: ', usuarios)
+    res.status(200).json({
        usuarios
     })
   }
@@ -12,13 +15,11 @@ const usuariosGet = async (req, res) => {
 
 
   const usuariosPost = async (req, res) => {
-     const {doc, du, pa, 
-      usuario, pass, tarjetas,visa,mastercard,amex,ca, cc, usd,
-       afip='', homologacion, desarrollo, cliente , publico, creador } = req.body
+     const { doc, du=true, pass, usuario, publico, creador, logeado,traeData, cuentas=[] } = req.body
 
-     const usuarioNuevo = new Usuario ({ doc, du, pa, 
-      usuario, pass, tarjetas,visa,mastercard,amex,ca, cc, usd,
-       afip, homologacion, desarrollo, cliente , publico, creador });
+     console.log('req body del add user: ', req.body)
+
+     const usuarioNuevo = new Usuario ({ doc, du, pass, usuario, publico, creador, logeado,traeData, cuentas  });
 
     await usuarioNuevo.save();
 
@@ -77,9 +78,69 @@ const usuariosGet = async (req, res) => {
     })
 }
 
+
+const loginUpdate = async(req, res) => {
+    
+  const doc = req.body.docSend.doc;
+  console.log('A ver el req Body, porque trae undefined ?:; ' , req.body.docSend.doc)
+  console.log('Me ejecuto con el doc: ', doc)
+
+  try {
+      
+      const usuarioActual = await Usuario.findOne({doc: req.body.docSend.doc});
+      
+      usuarioActual.logeado = true
+      
+      await usuarioActual.save();
+    console.log('El usuario actual .logeado quedo: ', usuarioActual)
+      
+
+  } catch (error) {
+      res.status(500).json({ error: 'Error al actualizar el usuario' });
+  }
+}
+
+const traeDatahdler = async(req, res) => {
+  console.log('Se ejecuto traeDatahdler, es el que deberia guardar en la DB la data encontrada')
+
+  console.dir(req.body, { depth: null });
+
+  const usuarioActual = await Usuario.findOne({doc: req.body.docSend.doc});
+
+  usuarioActual.cuentas = req.body.docSend.cuentas;
+
+  await usuarioActual.save();
+  console.log('El usuario actual con cuentas: ', usuarioActual)
+
+  res.status(200)
+   /* 
+  const doc = req.body.docSend.doc;
+  console.log('A ver el req Body, porque trae undefined ?:; ' , req.body.docSend.doc)
+  console.log('Me ejecuto con el doc: ', doc)
+
+  try {
+      
+      const usuarioActual = await Usuario.findOne({doc: req.body.docSend.doc});
+      
+      usuarioActual.logeado = true
+      
+      await usuarioActual.save();
+    console.log('El usuario actual .logeado quedo: ', usuarioActual)
+      
+
+  } catch (error) {
+      res.status(500).json({ error: 'Error al actualizar el usuario' });
+  } */
+}
+
+
+
+
 module.exports = {
     usuariosGet,
     usuariosPost,
     usuarioDelete,
-    usuarioUpdate
+    usuarioUpdate,
+    loginUpdate,
+    traeDatahdler
   }
